@@ -15,12 +15,19 @@ from schemas.todo_schemas import (
 
 todo_router = Blueprint('todo_router', __name__)
 
+
 @todo_router.route('/todo', methods=['POST'])
 def create_todo():
     schema = TodoCreateSchema()
     try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({'message': 'user_id query parameter is required'}), 400
         
         validated_data = schema.load(request.get_json() or {})
+        
+        validated_data['user_id'] = user_id
+        
         response, status = create_todo_logic(validated_data)
         return jsonify(response), status
     except ValidationError as err:
@@ -76,8 +83,8 @@ def update_todo(todo_id):
 @todo_router.route('/todo/delete', methods=['DELETE'])
 def delete_todo():
     try:
-        user_uid = request.args.get('user-id')
-        todo_uid = request.args.get('todo-id')
+        user_uid = request.args.get('user_id')
+        todo_uid = request.args.get('todo_id')
 
         if not user_uid or not todo_uid:
             return jsonify({'message': 'User-Id and Todo-Id headers are required'}), 400

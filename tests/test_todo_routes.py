@@ -11,7 +11,6 @@ class TodoRoutesTestCase(unittest.TestCase):
         with app.app_context():
             db.create_all()
 
-            
             response = self.client.post('/register', data=json.dumps({
                 "username": "testuser",
                 "first_name": "Test",
@@ -30,27 +29,24 @@ class TodoRoutesTestCase(unittest.TestCase):
 
     def test_create_todo_success(self):
         data = {
-            "username": "testuser",
             "task": "Test Todo Task",
             "status": "pending"
         }
-        response = self.client.post('/todo', data=json.dumps(data), content_type='application/json')
+        response = self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertIn('Todo created successfully', response.get_json().get('message'))
 
     def test_create_todo_invalid_status(self):
         data = {
-            "username": "testuser",
             "task": "Test Task",
             "status": "invalid_status"
         }
-        response = self.client.post('/todo', data=json.dumps(data), content_type='application/json')
+        response = self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertIn('Invalid status value', str(response.get_json()))
 
     def test_get_todos_success(self):
-        self.client.post('/todo', data=json.dumps({
-            "username": "testuser",
+        self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps({
             "task": "Fetch me",
             "status": "pending"
         }), content_type='application/json')
@@ -60,12 +56,12 @@ class TodoRoutesTestCase(unittest.TestCase):
         self.assertIn('todos', response.get_json())
 
     def test_update_todo(self):
-        res = self.client.post('/todo', data=json.dumps({
-            "username": "testuser",
+        res = self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps({
             "task": "To update",
             "status": "pending"
         }), content_type='application/json')
 
+        self.assertEqual(res.status_code, 201)
         todo_id = res.get_json()['todo']['id']
 
         update_data = {
@@ -78,20 +74,21 @@ class TodoRoutesTestCase(unittest.TestCase):
             headers={"User-Id": self.user_uid},
             content_type='application/json'
         )
+
         self.assertEqual(response.status_code, 200)
         self.assertIn('Todo updated successfully', response.get_json()['message'])
 
     def test_delete_todo(self):
-        res = self.client.post('/todo', data=json.dumps({
-            "username": "testuser",
+        res = self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps({
             "task": "To delete",
             "status": "pending"
         }), content_type='application/json')
 
-        todo_uid = res.get_json()['todo']['uid']  
+        self.assertEqual(res.status_code, 201)
+        todo_uid = res.get_json()['todo']['uid']
 
         response = self.client.delete(
-            f'/todo/delete?user-id={self.user_uid}&todo-id={todo_uid}'
+            f'/todo/delete?user_id={self.user_uid}&todo_id={todo_uid}'
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn('Todo deleted successfully', response.get_json()['message'])

@@ -12,17 +12,17 @@ from schemas.todo_schemas import TodoBasicResponseSchema
 
 def create_todo_logic(validated_data):
     try:
-        username = validated_data['username']
+        user_id = validated_data['user_id']
         task = validated_data['task']
         status = validated_data.get('status', 'pending')
 
-        logging.info(f"Creating todo for user: {username}, task: {task}, status: {status}")
+        logging.info(f"Creating todo for user_id: {user_id}, task: {task}, status: {status}")
 
-        user = get_user_by_username_or_email(username)
+        
+        user = get_user_by_uid(user_id)  
         if not user:
             return {'message': 'User not found'}, 404
 
-        
         todo = insert_todo(task=task, user_uid=user.uid, status=status)
 
         todo_schema = TodoBasicResponseSchema()
@@ -34,6 +34,7 @@ def create_todo_logic(validated_data):
     except Exception as e:
         logging.error(f"Todo creation error: {str(e)}")
         return {'message': 'Internal server error'}, 500
+
 def get_todos_logic(user_uid, query_params):
     try:
         user = get_user_by_uid(user_uid)

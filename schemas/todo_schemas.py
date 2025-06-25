@@ -7,9 +7,16 @@ from datetime import datetime
 STATUS_VALUES = ["pending", "in_progress", "completed", "cancelled"]
 
 class TodoCreateSchema(Schema):
-    username = fields.Str(required=True,validate=validate.Length(min=1, error="Username is required"),error_messages={"required": "Username is required"})
-    task = fields.Str(required=True,validate=validate.Length(min=1, max=500, error="Task must be between 1 and 500 characters"),error_messages={"required": "Task is required"})
-    status = fields.Str(missing="pending",validate=validate.OneOf(STATUS_VALUES, error="Invalid status value"))
+    task = fields.Str(
+        required=True,
+        validate=validate.Length(min=1, max=500, error="Task must be between 1 and 500 characters"),
+        error_messages={"required": "Task is required"}
+    )
+    status = fields.Str(
+        missing="pending",
+        validate=validate.OneOf(STATUS_VALUES, error="Invalid status value")
+    )
+
 
 class TodoResponseSchema(SQLAlchemyAutoSchema):
     class Meta:
