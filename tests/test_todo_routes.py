@@ -5,7 +5,8 @@ from models import db, User
 
 class TodoRoutesTestCase(unittest.TestCase):
     def setUp(self):
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+
         app.config['TESTING'] = True
         self.client = app.test_client()
         with app.app_context():
@@ -24,8 +25,10 @@ class TodoRoutesTestCase(unittest.TestCase):
 
     def tearDown(self):
         with app.app_context():
-            db.session.remove()
-            db.drop_all()
+                db.session.remove()
+                for table in reversed(db.metadata.sorted_tables):
+                    db.session.execute(table.delete())
+                db.session.commit()
 
     def test_create_todo_success(self):
         data = {

@@ -6,17 +6,19 @@ from models import db, User
 class UserRoutesTestCase(unittest.TestCase):
     def setUp(self):
         
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+
         app.config['TESTING'] = True
         self.client = app.test_client()
         with app.app_context():
             db.create_all()
 
     def tearDown(self):
-        
         with app.app_context():
             db.session.remove()
-            db.drop_all()
+            for table in reversed(db.metadata.sorted_tables):
+                db.session.execute(table.delete())
+            db.session.commit()
 
     def register_user(self, user_data):
         return self.client.post(
