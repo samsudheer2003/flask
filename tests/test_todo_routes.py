@@ -1,18 +1,17 @@
 import unittest
 import json
-from app import app
+from app import create_app
+from config import TestConfig
 from models import db, User
 
 class TodoRoutesTestCase(unittest.TestCase):
     def setUp(self):
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-
-        app.config['TESTING'] = True
-        self.client = app.test_client()
-        with app.app_context():
+        self.app = create_app(TestConfig)
+        self.client = self.app.test_client()
+        with self.app.app_context():
             db.create_all()
 
-            response = self.client.post('/register', data=json.dumps({
+            response = self.client.post('/user/register', data=json.dumps({
                 "username": "testuser",
                 "first_name": "Test",
                 "last_name": "User",
@@ -21,21 +20,24 @@ class TodoRoutesTestCase(unittest.TestCase):
                 "password": "TestPass123"
             }), content_type='application/json')
             self.assertEqual(response.status_code, 201)
+
             self.user_uid = User.query.filter_by(username="testuser").first().uid
 
     def tearDown(self):
-        with app.app_context():
-                db.session.remove()
-                for table in reversed(db.metadata.sorted_tables):
-                    db.session.execute(table.delete())
-                db.session.commit()
+        with self.app.app_context():
+            db.session.remove()
+            db.drop_all()
 
     def test_create_todo_success(self):
         data = {
             "task": "Test Todo Task",
             "status": "pending"
         }
-        response = self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps(data), content_type='application/json')
+        response = self.client.post(
+            f'/todo/?user_id={self.user_uid}',  
+            data=json.dumps(data),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 201)
         self.assertIn('Todo created successfully', response.get_json().get('message'))
 
@@ -44,22 +46,26 @@ class TodoRoutesTestCase(unittest.TestCase):
             "task": "Test Task",
             "status": "invalid_status"
         }
-        response = self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps(data), content_type='application/json')
+        response = self.client.post(
+            f'/todo/?user_id={self.user_uid}', 
+            data=json.dumps(data),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 400)
         self.assertIn('Invalid status value', str(response.get_json()))
 
     def test_get_todos_success(self):
-        self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps({
+        self.client.post(f'/todo/?user_id={self.user_uid}', data=json.dumps({
             "task": "Fetch me",
             "status": "pending"
         }), content_type='application/json')
 
-        response = self.client.get(f'/todo?user_id={self.user_uid}')
+        response = self.client.get(f'/todo/?user_id={self.user_uid}')  
         self.assertEqual(response.status_code, 200)
         self.assertIn('todos', response.get_json())
 
     def test_update_todo(self):
-        res = self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps({
+        res = self.client.post(f'/todo/?user_id={self.user_uid}', data=json.dumps({
             "task": "To update",
             "status": "pending"
         }), content_type='application/json')
@@ -82,7 +88,7 @@ class TodoRoutesTestCase(unittest.TestCase):
         self.assertIn('Todo updated successfully', response.get_json()['message'])
 
     def test_delete_todo(self):
-        res = self.client.post(f'/todo?user_id={self.user_uid}', data=json.dumps({
+        res = self.client.post(f'/todo/?user_id={self.user_uid}', data=json.dumps({
             "task": "To delete",
             "status": "pending"
         }), content_type='application/json')
@@ -91,7 +97,7 @@ class TodoRoutesTestCase(unittest.TestCase):
         todo_uid = res.get_json()['todo']['uid']
 
         response = self.client.delete(
-            f'/todo/delete?user_id={self.user_uid}&todo_id={todo_uid}'
+            f'/todo/delete?user_id={self.user_uid}&todo_id={todo_uid}'  
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn('Todo deleted successfully', response.get_json()['message'])

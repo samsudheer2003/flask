@@ -1,35 +1,31 @@
 import unittest
 import json
-from app import app
+from app import create_app
+from config import TestConfig
 from models import db, User
 
 class UserRoutesTestCase(unittest.TestCase):
     def setUp(self):
-        
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-
-        app.config['TESTING'] = True
-        self.client = app.test_client()
-        with app.app_context():
+        self.app = create_app(TestConfig)
+        self.client = self.app.test_client()
+        with self.app.app_context():
             db.create_all()
 
     def tearDown(self):
-        with app.app_context():
+        with self.app.app_context():
             db.session.remove()
-            for table in reversed(db.metadata.sorted_tables):
-                db.session.execute(table.delete())
-            db.session.commit()
+            db.drop_all()
 
     def register_user(self, user_data):
         return self.client.post(
-            '/register',
+            '/user/register', 
             data=json.dumps(user_data),
             content_type='application/json'
         )
 
     def login_user(self, login_data):
         return self.client.post(
-            '/login',
+            '/user/login',
             data=json.dumps(login_data),
             content_type='application/json'
         )
@@ -56,8 +52,8 @@ class UserRoutesTestCase(unittest.TestCase):
             "mobile_number": "1234567890",
             "password": "Secure123"
         }
-        self.register_user(user_data)  
-        response = self.register_user(user_data)  
+        self.register_user(user_data)
+        response = self.register_user(user_data)
         self.assertEqual(response.status_code, 409)
         self.assertIn("User already exists", response.get_json().get("message"))
 
@@ -81,7 +77,7 @@ class UserRoutesTestCase(unittest.TestCase):
             "last_name": "Password",
             "email": "weakpass@example.com",
             "mobile_number": "9876543210",
-            "password": "weakpass"  
+            "password": "weakpass"
         }
         response = self.register_user(user_data)
         self.assertEqual(response.status_code, 400)
