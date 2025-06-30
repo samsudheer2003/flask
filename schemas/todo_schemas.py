@@ -45,7 +45,6 @@ class TodoUpdateSchema(Schema):
             raise ValidationError("At least one field (task or status) must be provided")
 
 class TodoListQuerySchema(Schema):
-    user_id = fields.Str(required=True, validate=validate.Length(min=1), error_messages={"required": "user_id is required"})
     page = fields.Int(missing=1, validate=validate.Range(min=1))
     per_page = fields.Int(missing=10, validate=validate.Range(min=1, max=100))
     status = fields.Str(missing=None,validate=validate.OneOf(STATUS_VALUES, error="Invalid status filter"))

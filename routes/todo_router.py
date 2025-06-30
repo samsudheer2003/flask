@@ -1,15 +1,16 @@
 import logging
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from managers.todo_manager import (
-    create_todo_logic, 
-    get_todos_logic, 
-    update_todo_logic, 
+    create_todo_logic,
+    get_todos_logic,
+    update_todo_logic,
     delete_todo_logic
 )
 from schemas.todo_schemas import (
-    TodoCreateSchema, 
-    TodoUpdateSchema, 
+    TodoCreateSchema,
+    TodoUpdateSchema,
     TodoListQuerySchema
 )
 
@@ -17,13 +18,11 @@ todo_router = Blueprint('todo_router', __name__)
 
 
 @todo_router.route('/', methods=['POST'])
+@jwt_required()
 def create_todo():
     schema = TodoCreateSchema()
     try:
-        user_id = request.args.get('user_id')
-        if not user_id:
-            return jsonify({'message': 'user_id query parameter is required'}), 400
-
+        user_id = get_jwt_identity()  
         validated_data = schema.load(request.get_json() or {})
         validated_data['user_id'] = user_id
 
@@ -37,16 +36,14 @@ def create_todo():
     except Exception as e:
         logging.error(f"Create todo endpoint error: {str(e)}")
         return jsonify({'message': 'Internal server error'}), 500
-    
+
 
 @todo_router.route('/', methods=['GET'])
+@jwt_required()
 def get_todos():
     query_schema = TodoListQuerySchema()
     try:
-        user_id = request.args.get('user_id')
-        if not user_id:
-            return jsonify({'message': 'user_id query parameter is required'}), 400
-
+        user_id = get_jwt_identity()
         query_params = query_schema.load(request.args.to_dict())
         response, status = get_todos_logic(user_id, query_params)
         return jsonify(response), status
@@ -58,19 +55,22 @@ def get_todos():
     except Exception as e:
         logging.error(f"Get todos endpoint error: {str(e)}")
         return jsonify({'message': 'Internal server error'}), 500
-    
 
-@todo_router.route('/<int:todo_id>', methods=['PUT'])
-def update_todo(todo_id):
+
+@todo_router.route('/update', methods=['PUT'])
+@jwt_required()
+def update_todo():
     schema = TodoUpdateSchema()
     try:
-        user_id = request.headers.get('User-Id')
-        if not user_id:
-            return jsonify({'message': 'User-Id header is required'}), 400
+        user_id = get_jwt_identity()
+        todo_uid = request.args.get('todo_uid')
+        if not todo_uid:
+            return jsonify({'message': 'todo_uid query parameter is required'}), 400
 
         validated_data = schema.load(request.get_json() or {})
-        response, status = update_todo_logic(todo_id, user_id, validated_data)
+        response, status = update_todo_logic(todo_uid, user_id, validated_data)
         return jsonify(response), status
+
     except ValidationError as err:
         return jsonify({
             'message': 'Validation failed',
@@ -82,13 +82,14 @@ def update_todo(todo_id):
     
 
 @todo_router.route('/delete', methods=['DELETE'])
+@jwt_required()
 def delete_todo():
     try:
-        user_uid = request.args.get('user_id')
+        user_uid = get_jwt_identity()
         todo_uid = request.args.get('todo_id')
 
-        if not user_uid or not todo_uid:
-            return jsonify({'message': 'user_id and todo_id query parameters are required'}), 400
+        if not todo_uid:
+            return jsonify({'message': 'todo_id query parameter is required'}), 400
 
         response, status = delete_todo_logic(todo_uid, user_uid)
         return jsonify(response), status

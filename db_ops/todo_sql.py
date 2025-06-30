@@ -36,8 +36,8 @@ def get_todo_by_id(todo_id):
     
     return ToDo.query.filter_by(id=todo_id).first()
 
-def update_todo_by_id(todo_id, update_data):
-    todo = ToDo.query.filter_by(id=todo_id).first()
+def update_todo_by_uid(todo_uid, update_data):
+    todo = ToDo.query.filter_by(uid=todo_uid).first()
     if not todo:
         return None
 
@@ -50,6 +50,7 @@ def update_todo_by_id(todo_id, update_data):
     todo.updated_at = datetime.utcnow()
     db.session.commit()
     return todo
+
 
 
 def get_user_by_uid(user_uid):

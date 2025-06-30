@@ -6,6 +6,8 @@ from db_ops.user_sql import (
     get_user_by_username_or_email
 )
 from schemas.user_schemas import UserBasicResponseSchema
+from flask_jwt_extended import create_access_token
+from datetime import timedelta
 
 bcrypt = Bcrypt()
 
@@ -41,18 +43,26 @@ def register_user_logic(validated_data):
         logging.error(f"Registration error: {str(e)}")
         return {'message': 'Internal server error'}, 500
 
+
 def login_user_logic(validated_data):
-   
     try:
-        login_input = validated_data['username']  
+        login_input = validated_data['username']
         password = validated_data['password']
 
         user = get_user_by_username_or_email(login_input)
         if user and bcrypt.check_password_hash(user.password, password):
             user_schema = UserBasicResponseSchema()
+
+            # Create token with uid as identity and set expiration (optional)
+            access_token = create_access_token(
+                identity=str(user.uid),
+                expires_delta=timedelta(days=1)  # Token valid for 1 hour
+            )
+
             return {
                 'message': 'Login successful',
-                'user': user_schema.dump(user)
+                'user': user_schema.dump(user),
+                'access_token': access_token
             }, 200
 
         return {'message': 'Invalid username/email or password'}, 401

@@ -7,10 +7,12 @@ from flask_bcrypt import Bcrypt
 from routes.user_router import user_router
 from routes.todo_router import todo_router
 from flask_marshmallow import Marshmallow
+from flask_jwt_extended import JWTManager
 
 bcrypt = Bcrypt()
 ma = Marshmallow()
 migrate = Migrate()
+jwt = JWTManager() 
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -31,7 +33,7 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
-
+    jwt.init_app(app)
    
     app.register_blueprint(user_router, url_prefix='/user')
     app.register_blueprint(todo_router, url_prefix='/todo')
