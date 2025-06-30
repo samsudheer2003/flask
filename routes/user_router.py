@@ -24,7 +24,7 @@ def register():
     Returns:
         201: Registration successful with user details.
         400: Validation errors in request data.
-        409: Conflict – user already exists.
+        409: Conflict  user already exists.
         500: Internal server error.
     """
     schema = UserRegistrationSchema()
@@ -55,7 +55,7 @@ def login():
     Returns:
         200: Login successful with access token and user info.
         400: Validation errors in request data.
-        401: Unauthorized – invalid credentials.
+        401: Unauthorized invalid credentials.
         500: Internal server error.
     """
     schema = UserLoginSchema()
