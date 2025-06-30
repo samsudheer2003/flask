@@ -12,7 +12,15 @@ from datetime import timedelta
 bcrypt = Bcrypt()
 
 def register_user_logic(validated_data):
-  
+    """
+    Handles user registration logic.
+
+    Args:
+        validated_data (dict): User details including username, email, password, etc.
+
+    Returns:
+        tuple: JSON response with success or error message, and HTTP status code.
+    """
     try:
         username = validated_data['username']
         first_name = validated_data['first_name']
@@ -21,19 +29,18 @@ def register_user_logic(validated_data):
         mobile_number = validated_data['mobile_number']
         password = validated_data['password']
 
-        
+        # Check for existing user
         if is_user_exists(username=username, email=email, mobile=mobile_number):
             logging.warning(f"User already exists - username: {username}, email: {email}, mobile: {mobile_number}")
             return {'message': 'User already exists with provided details'}, 409
 
-       
+        # Hash and store password
         hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
         insert_user(username, first_name, last_name, email, mobile_number, hashed_pw)
 
-        
+        # Fetch and return created user
         user = get_user_by_username_or_email(username)
         user_schema = UserBasicResponseSchema()
-        
         return {
             'message': 'Registered successfully',
             'user': user_schema.dump(user)
@@ -45,6 +52,15 @@ def register_user_logic(validated_data):
 
 
 def login_user_logic(validated_data):
+    """
+    Handles user login and JWT token generation.
+
+    Args:
+        validated_data (dict): Contains username/email and password.
+
+    Returns:
+        tuple: JSON response including access_token on success, or error message and status.
+    """
     try:
         login_input = validated_data['username']
         password = validated_data['password']
@@ -53,10 +69,9 @@ def login_user_logic(validated_data):
         if user and bcrypt.check_password_hash(user.password, password):
             user_schema = UserBasicResponseSchema()
 
-            # Create token with uid as identity and set expiration (optional)
             access_token = create_access_token(
                 identity=str(user.uid),
-                expires_delta=timedelta(days=1)  # Token valid for 1 hour
+                expires_delta=timedelta(days=1)
             )
 
             return {

@@ -1466,3 +1466,73 @@ WHERE user.username = ? OR user.email = ? OR user.mobile_number = ?
 2025-06-30 14:31:27,066 [INFO] Flask App Created
 2025-06-30 14:31:27,151 [WARNING]  * Debugger is active!
 2025-06-30 14:31:27,165 [INFO]  * Debugger PIN: 111-301-888
+2025-06-30 15:56:44,424 [INFO] Flask App Created
+2025-06-30 15:56:44,492 [INFO] Flask App Created
+2025-06-30 15:56:45,188 [INFO] Flask App Created
+2025-06-30 15:56:45,200 [INFO] Flask App Created
+2025-06-30 15:56:45,580 [WARNING] User already exists - username: duplicateuser, email: duplicate@example.com, mobile: 1234567890
+2025-06-30 15:56:45,587 [INFO] Flask App Created
+2025-06-30 15:56:45,932 [INFO] Flask App Created
+2025-06-30 15:57:28,921 [INFO] Flask App Created
+2025-06-30 15:57:29,226 [INFO] Flask App Created
+2025-06-30 15:57:29,473 [INFO] Flask App Created
+2025-06-30 15:57:29,724 [INFO] Flask App Created
+2025-06-30 15:57:29,986 [INFO] Flask App Created
+2025-06-30 15:59:54,874 [INFO] Flask App Created
+2025-06-30 15:59:54,965 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-30 15:59:54,965 [INFO] [33mPress CTRL+C to quit[0m
+2025-06-30 15:59:54,969 [INFO]  * Restarting with stat
+2025-06-30 15:59:56,313 [INFO] Flask App Created
+2025-06-30 15:59:56,341 [WARNING]  * Debugger is active!
+2025-06-30 15:59:56,353 [INFO]  * Debugger PIN: 111-301-888
+2025-06-30 16:01:59,508 [INFO]  * Detected change in 'C:\\Users\\sam.sudheer\\Desktop\\flask\\tests\\test_todo_routes.py', reloading
+2025-06-30 16:01:59,850 [INFO]  * Restarting with stat
+2025-06-30 16:02:02,227 [INFO] Flask App Created
+2025-06-30 16:02:02,274 [WARNING]  * Debugger is active!
+2025-06-30 16:02:02,280 [INFO]  * Debugger PIN: 111-301-888
+2025-06-30 16:02:11,550 [INFO] Flask App Created
+2025-06-30 16:02:12,072 [INFO] Flask App Created
+2025-06-30 16:02:12,569 [INFO] Flask App Created
+2025-06-30 16:02:13,077 [INFO] Flask App Created
+2025-06-30 16:02:13,555 [INFO] Flask App Created
+2025-06-30 16:04:06,147 [INFO] Flask App Created
+2025-06-30 16:04:06,709 [INFO] Flask App Created
+2025-06-30 16:04:07,274 [INFO] Flask App Created
+2025-06-30 16:04:07,759 [INFO] Flask App Created
+2025-06-30 16:04:08,239 [INFO] Flask App Created
+2025-06-30 16:07:44,732 [INFO] Flask App Created
+2025-06-30 16:07:45,344 [INFO] Flask App Created
+2025-06-30 16:07:45,837 [INFO] Creating todo for user_uid: 1a37cf31-95fc-47a7-b626-f720620fc3f9, task: Test Todo Task, status: pending
+2025-06-30 16:07:45,848 [INFO] Flask App Created
+2025-06-30 16:07:46,326 [INFO] Creating todo for user_uid: c42f6db1-5530-47dc-9d4e-561652fa3a3a, task: To delete, status: pending
+2025-06-30 16:07:46,340 [INFO] Flask App Created
+2025-06-30 16:07:46,816 [INFO] Creating todo for user_uid: e1f12223-86d4-4461-a748-c94cc756761d, task: Fetch me, status: pending
+2025-06-30 16:07:46,830 [INFO] Flask App Created
+2025-06-30 16:07:47,302 [INFO] Creating todo for user_uid: dfb096dd-d4eb-4e27-9908-09399e7556a6, task: To update, status: pending
+2025-06-30 16:23:24,448 [INFO] Flask App Created
+2025-06-30 16:23:24,545 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-30 16:23:24,545 [INFO] [33mPress CTRL+C to quit[0m
+2025-06-30 16:23:24,549 [INFO]  * Restarting with stat
+2025-06-30 16:23:26,087 [INFO] Flask App Created
+2025-06-30 16:23:26,124 [WARNING]  * Debugger is active!
+2025-06-30 16:23:26,124 [INFO]  * Debugger PIN: 111-301-888
+2025-06-30 16:24:04,936 [INFO] 127.0.0.1 - - [30/Jun/2025 16:24:04] "[35m[1mPOST /user/register HTTP/1.1[0m" 201 -
+2025-06-30 16:24:28,429 [INFO] 127.0.0.1 - - [30/Jun/2025 16:24:28] "POST /user/login HTTP/1.1" 200 -
+2025-06-30 16:27:43,122 [INFO] 127.0.0.1 - - [30/Jun/2025 16:27:43] "[31m[1mPOST /todo/ HTTP/1.1[0m" 400 -
+2025-06-30 16:28:13,859 [INFO] Creating todo for user_uid: a08aae87-eede-45e8-b4c0-dce682789724, task: Finish report, status: pending
+2025-06-30 16:28:13,925 [INFO] 127.0.0.1 - - [30/Jun/2025 16:28:13] "[35m[1mPOST /todo/ HTTP/1.1[0m" 201 -
+2025-06-30 16:28:23,067 [INFO] 127.0.0.1 - - [30/Jun/2025 16:28:23] "GET /todo/ HTTP/1.1" 200 -
+2025-06-30 16:29:54,230 [INFO] 127.0.0.1 - - [30/Jun/2025 16:29:54] "[31m[1mPUT /todo/update HTTP/1.1[0m" 400 -
+2025-06-30 16:31:29,472 [INFO] 127.0.0.1 - - [30/Jun/2025 16:31:29] "PUT /todo/update?todo_uid=23bf4e66-8b67-4134-9965-e310b47f982d HTTP/1.1" 200 -
+2025-06-30 16:32:07,044 [INFO] 127.0.0.1 - - [30/Jun/2025 16:32:07] "[31m[1mPUT /todo/update?todo_uid=ea5b1dc7-5046-4a0b-ae08-d96d1d671b64 HTTP/1.1[0m" 403 -
+2025-06-30 16:33:44,160 [INFO] Flask App Created
+2025-06-30 16:33:44,691 [INFO] Flask App Created
+2025-06-30 16:33:45,172 [INFO] Creating todo for user_uid: 431bf165-1671-4ac9-b2fb-0772e0623cb7, task: Test Todo Task, status: pending
+2025-06-30 16:33:45,174 [INFO] Flask App Created
+2025-06-30 16:33:45,663 [INFO] Creating todo for user_uid: 966f431d-039c-44b2-bd78-3330f00062b1, task: To delete, status: pending
+2025-06-30 16:33:45,681 [INFO] Flask App Created
+2025-06-30 16:33:46,144 [INFO] Creating todo for user_uid: 40acc795-b09e-4ef6-8655-bd68e5e778bc, task: Fetch me, status: pending
+2025-06-30 16:33:46,167 [INFO] Flask App Created
+2025-06-30 16:33:46,630 [INFO] Creating todo for user_uid: 159a3494-1651-43f5-b08f-c6679d38ed1e, task: To update, status: pending
