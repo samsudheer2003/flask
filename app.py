@@ -1,46 +1,66 @@
-import logging
-from flask import Flask
-from config import Config
-from models import db
+import os
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-from flask_bcrypt import Bcrypt
+from dotenv import load_dotenv
+from datetime import timedelta
+import logging
+
+# Load environment variables
+load_dotenv()
+
+# Initialize Flask App
+app = Flask(__name__)
+
+# Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///users.db')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=7)
+
+# Import extensions and initialize
+from extensions import db, jwt, migrate
+db.init_app(app)
+jwt.init_app(app)
+
+# ✅ Import models BEFORE initializing Migrate
+from models import *  # Ensure all models are imported here
+
+migrate = Migrate(app, db)
+jwt = JWTManager(app)
+
+# Register Blueprints
 from routes.user_router import user_router
 from routes.todo_router import todo_router
-from flask_marshmallow import Marshmallow
-from flask_jwt_extended import JWTManager
 
-bcrypt = Bcrypt()
-ma = Marshmallow()
-migrate = Migrate()
-jwt = JWTManager() 
+app.register_blueprint(user_router, url_prefix='/api/users')
+app.register_blueprint(todo_router, url_prefix='/api/todos')
 
-def create_app(config_class=Config):
-    app = Flask(__name__)
-    app.config.from_object(config_class)
+# Middleware: Header Validation
+@app.before_request
+def validate_mandatory_headers():
+    if request.endpoint in ('static',):
+        return  # Skip static files
 
+    required_headers = ['Content-Type', 'Device-Name', 'Device-Uuid']
+    for header in required_headers:
+        if header not in request.headers:
+            return jsonify({'message': f'Missing required header: {header}'}), 400
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s [%(levelname)s] %(message)s',
-        handlers=[
-            logging.FileHandler("app.log"),
-            logging.StreamHandler()
-        ]
-    )
+# Logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    
-    db.init_app(app)
-    bcrypt.init_app(app)
-    ma.init_app(app)
-    migrate.init_app(app, db)
-    jwt.init_app(app)
-   
-    app.register_blueprint(user_router, url_prefix='/user')
-    app.register_blueprint(todo_router, url_prefix='/todo')
+# Optional: Twilio Email/SMS Notification Initialization
+# from utils.twilio_utils import init_twilio
+# init_twilio()
 
-    logging.info("Flask App Created")
-    return app
+# Root route
+@app.route('/')
+def index():
+    return jsonify({'message': 'Welcome to the TODO API with JWT & Refresh Tokens'}), 200
 
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True)

@@ -1,25 +1,31 @@
+import os
 import logging
+from datetime import timedelta, datetime, timezone
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token, create_refresh_token
+from dotenv import load_dotenv
+
 from db_ops.user_sql import (
     is_user_exists,
     insert_user,
     get_user_by_username_or_email
 )
+from db_ops.token_sql import (
+    store_tokens,
+    get_user_id_from_refresh_token,
+    update_access_token
+)
 from schemas.user_schemas import UserBasicResponseSchema
-from flask_jwt_extended import create_access_token
-from datetime import timedelta
 
+# Load environment and init bcrypt
+load_dotenv()
+PEPPER_SECRET = os.getenv("PEPPER_SECRET", "")
 bcrypt = Bcrypt()
+
 
 def register_user_logic(validated_data):
     """
     Handles user registration logic.
-
-    Args:
-        validated_data (dict): User details including username, email, password, etc.
-
-    Returns:
-        tuple: JSON response with success or error message, and HTTP status code.
     """
     try:
         username = validated_data['username']
@@ -33,12 +39,15 @@ def register_user_logic(validated_data):
             logging.warning(f"User already exists - username: {username}, email: {email}, mobile: {mobile_number}")
             return {'message': 'User already exists with provided details'}, 409
 
-        
-        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+        # Salt + Pepper Hashing
+        peppered_pw = password + PEPPER_SECRET
+        hashed_pw = bcrypt.generate_password_hash(peppered_pw).decode('utf-8')
+
         insert_user(username, first_name, last_name, email, mobile_number, hashed_pw)
 
         user = get_user_by_username_or_email(username)
         user_schema = UserBasicResponseSchema()
+
         return {
             'message': 'Registered successfully',
             'user': user_schema.dump(user)
@@ -49,37 +58,73 @@ def register_user_logic(validated_data):
         return {'message': 'Internal server error'}, 500
 
 
-def login_user_logic(validated_data):
+def login_user_logic(validated_data, device_name, device_uuid):
     """
-    Handles user login and JWT token generation.
-
-    Args:
-        validated_data (dict): Contains username/email and password.
-
-    Returns:
-        tuple: JSON response including access_token on success, or error message and status.
+    Handles user login, password verification, and token generation.
     """
     try:
         login_input = validated_data['username']
         password = validated_data['password']
 
         user = get_user_by_username_or_email(login_input)
-        if user and bcrypt.check_password_hash(user.password, password):
-            user_schema = UserBasicResponseSchema()
+        if user:
+            peppered_pw = password + PEPPER_SECRET
+            if bcrypt.check_password_hash(user.password, peppered_pw):
+                user_schema = UserBasicResponseSchema()
 
-            access_token = create_access_token(
-                identity=str(user.uid),
-                expires_delta=timedelta(days=1)
-            )
+                access_token = create_access_token(
+                    identity=str(user.uid),
+                    expires_delta=timedelta(minutes=15)
+                )
+                refresh_token = create_refresh_token(
+                    identity=str(user.uid),
+                    expires_delta=timedelta(days=7)
+                )
 
-            return {
-                'message': 'Login successful',
-                'user': user_schema.dump(user),
-                'access_token': access_token
-            }, 200
+                store_tokens(
+                    user_id=user.uid,
+                    access_token=access_token,
+                    refresh_token=refresh_token,
+                    device_name=device_name,
+                    device_uuid=device_uuid,
+                    created_at=datetime.now(timezone.utc)
+                )
+
+                return {
+                    'message': 'Login successful',
+                    'user': user_schema.dump(user),
+                    'access_token': access_token,
+                    'refresh_token': refresh_token
+                }, 200
 
         return {'message': 'Invalid username/email or password'}, 401
 
     except Exception as e:
         logging.error(f"Login error: {str(e)}")
+        return {'message': 'Internal server error'}, 500
+
+
+def refresh_token_logic(refresh_token, device_uuid):
+    """
+    Generates new access token from refresh token and validates device.
+    """
+    try:
+        user_id = get_user_id_from_refresh_token(refresh_token, device_uuid)
+        if not user_id:
+            return {'message': 'Invalid or expired refresh token or mismatched device UUID'}, 401
+
+        new_access_token = create_access_token(
+            identity=str(user_id),
+            expires_delta=timedelta(minutes=15)
+        )
+
+        update_access_token(user_id, device_uuid, new_access_token)
+
+        return {
+            'message': 'Token refreshed successfully',
+            'access_token': new_access_token
+        }, 200
+
+    except Exception as e:
+        logging.error(f"Refresh token error: {str(e)}")
         return {'message': 'Internal server error'}, 500

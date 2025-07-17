@@ -1536,3 +1536,11 @@ WHERE user.username = ? OR user.email = ? OR user.mobile_number = ?
 2025-06-30 16:33:46,144 [INFO] Creating todo for user_uid: 40acc795-b09e-4ef6-8655-bd68e5e778bc, task: Fetch me, status: pending
 2025-06-30 16:33:46,167 [INFO] Flask App Created
 2025-06-30 16:33:46,630 [INFO] Creating todo for user_uid: 159a3494-1651-43f5-b08f-c6679d38ed1e, task: To update, status: pending
+2025-07-17 10:51:53,225 [INFO] Flask App Created
+2025-07-17 10:51:53,559 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-17 10:51:53,559 [INFO] [33mPress CTRL+C to quit[0m
+2025-07-17 10:51:53,567 [INFO]  * Restarting with stat
+2025-07-17 10:51:56,510 [INFO] Flask App Created
+2025-07-17 10:51:56,594 [WARNING]  * Debugger is active!
+2025-07-17 10:51:56,599 [INFO]  * Debugger PIN: 360-839-814

@@ -1,4 +1,6 @@
 import logging
+from flask import request
+from models import UserToken
 from db_ops.todo_sql import (
     insert_todo, 
     get_todos_by_user_with_filters,
@@ -7,19 +9,28 @@ from db_ops.todo_sql import (
     delete_todo_by_uid
 )
 from schemas.todo_schemas import TodoBasicResponseSchema
+from utils import extract_mandatory_headers
+
+def _validate_device_uuid(user_uid, device_uuid):
+    token_entry = UserToken.query.filter_by(user_uid=user_uid, device_uuid=device_uuid).first()
+    if not token_entry:
+        logging.warning(f"Device UUID mismatch for user_uid: {user_uid}")
+        return False
+    return True
+
 
 def create_todo_logic(validated_data):
-    """
-    Handles logic for creating a new todo item.
-
-    Args:
-        validated_data (dict): Validated input data with user_id, task, and optional status.
-
-    Returns:
-        tuple: JSON response with the created todo or an error message, and HTTP status code.
-    """
     try:
+        headers, error_response, status = extract_mandatory_headers()
+        if error_response:
+            return error_response, status
+
         user_uid = validated_data['user_id']
+        device_uuid = headers['Device-UUID']
+
+        if not _validate_device_uuid(user_uid, device_uuid):
+            return {'message': 'Unauthorized device'}, 401
+
         task = validated_data['task']
         status = validated_data.get('status', 'pending')
 
@@ -39,17 +50,15 @@ def create_todo_logic(validated_data):
 
 
 def get_todos_logic(user_uid, query_params):
-    """
-    Retrieves todos for a user with optional filters (pagination, status, search).
-
-    Args:
-        user_uid (str): UID of the user requesting their todos.
-        query_params (dict): Filter parameters like page, per_page, status, search.
-
-    Returns:
-        tuple: JSON response with paginated todo list or error, and HTTP status code.
-    """
     try:
+        headers, error_response, status = extract_mandatory_headers()
+        if error_response:
+            return error_response, status
+
+        device_uuid = headers['Device-UUID']
+        if not _validate_device_uuid(user_uid, device_uuid):
+            return {'message': 'Unauthorized device'}, 401
+
         todos, total_count = get_todos_by_user_with_filters(
             user_uid=user_uid,
             page=query_params.get('page', 1),
@@ -77,18 +86,15 @@ def get_todos_logic(user_uid, query_params):
 
 
 def update_todo_logic(todo_uid, user_uid, validated_data):
-    """
-    Updates a todo item if it belongs to the user.
-
-    Args:
-        todo_uid (str): Unique identifier for the todo.
-        user_uid (str): UID of the user trying to update the todo.
-        validated_data (dict): Data containing fields to be updated.
-
-    Returns:
-        tuple: JSON response with updated todo or error, and HTTP status code.
-    """
     try:
+        headers, error_response, status = extract_mandatory_headers()
+        if error_response:
+            return error_response, status
+
+        device_uuid = headers['Device-UUID']
+        if not _validate_device_uuid(user_uid, device_uuid):
+            return {'message': 'Unauthorized device'}, 401
+
         todo = get_todo_by_uid(todo_uid)
         if not todo:
             return {'message': 'Todo not found'}, 404
@@ -110,17 +116,15 @@ def update_todo_logic(todo_uid, user_uid, validated_data):
 
 
 def delete_todo_logic(todo_uid, user_uid):
-    """
-    Deletes a todo if it belongs to the user.
-
-    Args:
-        todo_uid (str): Unique identifier of the todo to delete.
-        user_uid (str): UID of the user requesting the delete.
-
-    Returns:
-        tuple: JSON response confirming deletion or error, and HTTP status code.
-    """
     try:
+        headers, error_response, status = extract_mandatory_headers()
+        if error_response:
+            return error_response, status
+
+        device_uuid = headers['Device-UUID']
+        if not _validate_device_uuid(user_uid, device_uuid):
+            return {'message': 'Unauthorized device'}, 401
+
         todo = get_todo_by_uid(todo_uid)
         if not todo:
             return {'message': 'Todo not found'}, 404

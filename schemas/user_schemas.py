@@ -25,7 +25,10 @@ class UserRegistrationSchema(Schema):
             validate.Regexp(r'^[a-zA-Z]+$', error="Last name must contain only letters")
         ]
     )
-    email = fields.Email(required=True, error_messages={"invalid": "Invalid email address"})
+    email = fields.Email(
+        required=True,
+        error_messages={"required": "Email is required", "invalid": "Invalid email address"}
+    )
     mobile_number = fields.Str(
         required=True,
         validate=validate.Regexp(r'^\d{10}$', error="Mobile number must be exactly 10 digits")
@@ -34,6 +37,12 @@ class UserRegistrationSchema(Schema):
 
     @validates('password')
     def validate_password(self, value):
+        """
+        Enforces strong password rules:
+        - At least one lowercase letter
+        - At least one uppercase letter
+        - At least one digit
+        """
         if value.lower() == value:
             raise ValidationError("Password must contain at least one uppercase letter")
         if value.upper() == value:
@@ -49,7 +58,7 @@ class UserResponseSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
         load_instance = True
-        exclude = ('password',)  
+        exclude = ('password',)  # Never expose hashed password in response
 
 class UserBasicResponseSchema(Schema):
     uid = fields.Str()
