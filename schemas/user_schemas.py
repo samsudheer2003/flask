@@ -29,10 +29,15 @@ class UserRegistrationSchema(Schema):
         required=True,
         error_messages={"required": "Email is required", "invalid": "Invalid email address"}
     )
+    
     mobile_number = fields.Str(
-        required=True,
-        validate=validate.Regexp(r'^\d{10}$', error="Mobile number must be exactly 10 digits")
+    required=True,
+    validate=validate.Regexp(
+        r'^\+\d{10,15}$',
+        error="Mobile number must be in international format (e.g., +919876543210)"
     )
+)
+
     password = fields.Str(required=True, validate=validate.Length(min=6))
 
     @validates('password')
