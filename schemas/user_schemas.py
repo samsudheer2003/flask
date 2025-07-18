@@ -58,7 +58,7 @@ class UserResponseSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
         load_instance = True
-        exclude = ('password',)  # Never expose hashed password in response
+        exclude = ('password',)
 
 class UserBasicResponseSchema(Schema):
     uid = fields.Str()
@@ -66,3 +66,10 @@ class UserBasicResponseSchema(Schema):
     first_name = fields.Str()
     last_name = fields.Str()
     email = fields.Email()
+    phone_verified = fields.Bool()
+    email_verified = fields.Bool()
+
+# Schema for OTP Verification
+class OTPVerifySchema(Schema):
+    mobile_number = fields.Str(required=True, validate=validate.Regexp(r'^\d{10}$'))
+    otp = fields.Str(required=True, validate=validate.Length(equal=6, error="OTP must be 6 digits"))

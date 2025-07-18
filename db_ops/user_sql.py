@@ -38,3 +38,21 @@ def get_all_users_serialized():
     users = User.query.all()
     user_schema = UserResponseSchema(many=True)
     return user_schema.dump(users)
+
+def update_verification_status(user_uid, verification_type):
+    """
+    Updates the email_verified or phone_verified field of the user.
+    """
+    user = get_user_by_uid(user_uid)
+    if not user:
+        return False
+
+    if verification_type == "phone":
+        user.phone_verified = True
+    elif verification_type == "email":
+        user.email_verified = True
+    else:
+        return False
+
+    db.session.commit()
+    return True
