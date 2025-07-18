@@ -5,7 +5,7 @@ from flask_jwt_extended import create_access_token
 from datetime import datetime, timezone
 
 from models import db, UserToken, User
-from managers.user_manager import register_user_logic, login_user_logic, verify_otp_logic
+from managers.user_manager import register_user_logic, login_user_logic, verify_otp_logic,resend_otp_logic
 from schemas.user_schemas import UserRegistrationSchema, UserLoginSchema
 from utils import extract_mandatory_headers
 
@@ -109,7 +109,7 @@ def refresh_token():
 def verify_otp():
     """
     Verifies OTP for phone or email.
-    Expected JSON: { "user_id": "...", "otp": "...", "type": "phone" or "email" }
+    
     """
     try:
         data = request.get_json() or {}
@@ -117,4 +117,18 @@ def verify_otp():
         return jsonify(response), status
     except Exception as e:
         logging.error(f"OTP verification route error: {str(e)}")
+        return jsonify({'message': 'Internal server error'}), 500
+
+
+@user_router.route('/resend-otp', methods=['POST'])
+def resend_otp():
+    """
+    Resend OTP to the user’s phone or email.
+    """
+    try:
+        data = request.get_json() or {}
+        response, status = resend_otp_logic(data)
+        return jsonify(response), status
+    except Exception as e:
+        logging.error(f"Resend OTP route error: {str(e)}")
         return jsonify({'message': 'Internal server error'}), 500

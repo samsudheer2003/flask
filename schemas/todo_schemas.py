@@ -12,7 +12,7 @@ class TodoCreateSchema(Schema):
         error_messages={"required": "Task is required."}
     )
     status = fields.Str(
-        missing="pending",
+        load_default="pending",
         validate=validate.OneOf(STATUS_VALUES, error="Invalid status value.")
     )
 
@@ -20,10 +20,10 @@ class TodoCreateSchema(Schema):
 class TodoUpdateSchema(Schema):
     task = fields.Str(
         validate=validate.Length(min=1, max=500, error="Task must be between 1 and 500 characters."),
-        missing=None
+        load_default=None
     )
     status = fields.Str(
-        missing=None,
+        load_default=None,
         validate=validate.OneOf(STATUS_VALUES, error="Invalid status value.")
     )
 
@@ -35,19 +35,19 @@ class TodoUpdateSchema(Schema):
 
 class TodoListQuerySchema(Schema):
     page = fields.Int(
-        missing=1,
+        load_default=1,
         validate=validate.Range(min=1, error="Page must be at least 1.")
     )
     per_page = fields.Int(
-        missing=10,
+        load_default=10,
         validate=validate.Range(min=1, max=100, error="Per page must be between 1 and 100.")
     )
     status = fields.Str(
-        missing=None,
+        load_default=None,
         validate=validate.OneOf(STATUS_VALUES, error="Invalid status filter.")
     )
     search = fields.Str(
-        missing=None,
+        load_default=None,
         validate=validate.Length(max=100, error="Search term must be 100 characters or less.")
     )
 

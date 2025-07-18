@@ -2,15 +2,15 @@ from models import db, User
 from sqlalchemy import or_
 from schemas.user_schemas import UserResponseSchema
 
-def is_user_exists(username, email, mobile):
+def is_user_exists(username, email):
     return (
         User.query.filter(
             (User.username == username) |
-            (User.email == email) |
-            (User.mobile_number == mobile)
+            (User.email == email)
         ).first()
         is not None
     )
+
 
 def insert_user(username, first_name, last_name, email, mobile, hashed_pw):
     user = User(

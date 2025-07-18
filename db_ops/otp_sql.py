@@ -37,3 +37,11 @@ def mark_otp_used(otp_entry):
     """
     otp_entry.is_used = True
     db.session.commit()
+
+def mark_all_user_otps_used(user_uid, purpose):
+    """
+    Mark all existing OTPs for the user and purpose as used.
+    """
+    from models import UserOTP
+    UserOTP.query.filter_by(user_uid=user_uid, purpose=purpose, is_used=False).update({'is_used': True})
+    db.session.commit()
